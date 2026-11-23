@@ -1,0 +1,96 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Ваш кошик — GameSteam{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .cart-table th {
+        text-align: left;
+        padding: 12px;
+        background: #101822;
+        color: var(--steam-blue);
+        font-size: 13px;
+        text-transform: uppercase;
+        border-bottom: 1px solid #2a475e;
+    }
+
+    .cart-table td {
+        padding: 14px 12px;
+        background: rgba(22, 32, 45, 0.85);
+        border-bottom: 1px solid #1b2838;
+    }
+
+    .cart-total-box {
+        background: #101822;
+        padding: 20px;
+        border: 1px solid #2a475e;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1 style="color: #fff; font-weight: normal; text-transform: uppercase; letter-spacing: 1px;">Ваш кошик для покупок</h1>
+
+    {% if cart|length > 0 %}
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Гра</th>
+                    <th>Кількість</th>
+                    <th>Ціна за од.</th>
+                    <th>Сума</th>
+                    <th>Дія</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                    {% with product=item.product %}
+                        <tr>
+                            <td><a href="{{ product.get_absolute_url }}" style="color: #fff; text-decoration: none; font-weight: bold;">{{ product.title }}</a></td>
+                            <td>
+                                <form action="{% url 'cart:cart_add' product.id %}" method="post" style="display: inline-flex; gap: 6px; align-items: center;">
+                                    {% csrf_token %}
+                                    {{ item.update_quantity_form.quantity }}
+                                    {{ item.update_quantity_form.override }}
+                                    <button type="submit" class="btn-steam-blue" style="padding: 4px 10px; font-size: 12px;">Оновити</button>
+                                </form>
+                            </td>
+                            <td>{{ item.price }} грн</td>
+                            <td style="color: #acdbf5; font-weight: bold;">{{ item.total_price }} грн</td>
+                            <td>
+                                <form action="{% url 'cart:cart_remove' product.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" style="background: none; border: none; color: #8f98a0; text-decoration: underline; cursor: pointer;">Видалити</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="cart-total-box">
+            <div>
+                <a href="{% url 'shop:product_list' %}" class="btn-steam-blue">← Продовжити покупки</a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span style="font-size: 18px;">Загальна сума: <strong style="color: #fff; font-size: 22px;">{{ cart.get_total_price }} грн</strong></span>
+                <a href="{% url 'orders:order_create' %}" class="btn-steam-green">Оформити замовлення</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="steam-panel">
+            <p>Ваш кошик наразі порожній.</p>
+            <a href="{% url 'shop:product_list' %}" class="btn-steam-blue">Перейти до крамниці</a>
+        </div>
+    {% endif %}
+{% endblock %}

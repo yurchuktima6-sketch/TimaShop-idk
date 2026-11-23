@@ -1,0 +1,66 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Особистий кабінет — GameShop{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 30px auto;">
+    
+    <div class="steam-panel" style="margin-bottom: 30px;">
+        <h2 style="margin-top: 0; color: #fff; border-bottom: 1px solid #2a475e; padding-bottom: 10px;">
+            Привіт, {{ request.user.username }}!
+        </h2>
+        <p style="color: var(--steam-muted); margin-bottom: 20px;">Email: {{ request.user.email }}</p>
+
+        <h3 style="color: #66c0f4; font-size: 16px; margin-bottom: 15px;">Редагувати дані</h3>
+        <form method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            {% csrf_token %}
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--steam-muted); margin-bottom: 5px;">Ім'я</label>
+                <input type="text" name="first_name" value="{{ request.user.first_name }}" style="width: 100%; padding: 8px; background: #151922; border: 1px solid #2a475e; color: #fff; border-radius: 3px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--steam-muted); margin-bottom: 5px;">Прізвище</label>
+                <input type="text" name="last_name" value="{{ request.user.last_name }}" style="width: 100%; padding: 8px; background: #151922; border: 1px solid #2a475e; color: #fff; border-radius: 3px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--steam-muted); margin-bottom: 5px;">Email</label>
+                <input type="email" name="email" value="{{ request.user.email }}" style="width: 100%; padding: 8px; background: #151922; border: 1px solid #2a475e; color: #fff; border-radius: 3px;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; color: var(--steam-muted); margin-bottom: 5px;">Телефон</label>
+                <input type="text" name="phone" value="{{ user_profile.phone }}" style="width: 100%; padding: 8px; background: #151922; border: 1px solid #2a475e; color: #fff; border-radius: 3px;">
+            </div>
+            <div style="grid-column: span 2; margin-top: 10px;">
+                <button type="submit" class="btn-steam-green" style="padding: 8px 20px;">Зберегти зміни</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="steam-panel">
+        <h3 style="margin-top: 0; color: #fff; border-bottom: 1px solid #2a475e; padding-bottom: 10px;">Історія замовлень</h3>
+        
+        {% if orders %}
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                {% for order in orders %}
+                    <div style="background: #151922; border: 1px solid #2a475e; padding: 15px; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: var(--steam-muted);">
+                            <span>Замовлення №<strong>{{ order.id }}</strong> від {{ order.created|date:"d.m.Y H:i" }}</span>
+                            <span style="color: #66c0f4;">Статус: Активне</span>
+                        </div>
+                        <ul style="margin: 0; padding-left: 20px; color: #c7d5e0;">
+                            {% for item in order.items.all %}
+                                <li style="margin-bottom: 5px;">
+                                    {{ item.product.name }} — {{ item.quantity }} шт. по {{ item.price }} грн
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: var(--steam-muted); margin-top: 15px;">У вас поки немає оформлених замовлень.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

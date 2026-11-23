@@ -1,0 +1,20 @@
+# Віртуальне оточення
+.venv/
+venv/
+env/
+
+# Секрети та змінні середовища
+.env
+*.env
+
+# База даних SQLite та медіафайли
+db.sqlite3
+media/
+
+# Кеш Python та IDE
+__pycache__/
+*.py[cod]
+*.sqlite3-journal
+.vscode/
+.idea/
+.DS_Store

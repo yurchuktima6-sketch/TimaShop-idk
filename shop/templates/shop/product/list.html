@@ -1,0 +1,244 @@
+{% extends "shop/base.html" %}
+
+{% block title %}{% if category %}{{ category.name }} — GameSteam{% else %}Крамниця — GameSteam{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .store-layout {
+        display: flex;
+        gap: 25px;
+        align-items: flex-start;
+    }
+
+    .sidebar {
+        width: 220px;
+        background: rgba(22, 32, 45, 0.85);
+        padding: 15px;
+        border-radius: 3px;
+        border: 1px solid #2a475e;
+    }
+
+    .sidebar h3 {
+        color: var(--steam-blue);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 0;
+        border-bottom: 1px solid #2a475e;
+        padding-bottom: 8px;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar li {
+        margin-bottom: 6px;
+    }
+
+    .sidebar a {
+        display: block;
+        padding: 6px 10px;
+        color: var(--steam-text);
+        text-decoration: none;
+        font-size: 14px;
+        border-radius: 2px;
+        transition: background 0.15s;
+    }
+
+    .sidebar a:hover {
+        background: #2a475e;
+        color: #fff;
+    }
+
+    .sidebar li.selected a {
+        background: linear-gradient(90deg, #2a475e 0%, rgba(102, 192, 244, 0.25) 100%);
+        color: var(--steam-blue);
+        font-weight: bold;
+        border-left: 3px solid var(--steam-blue);
+    }
+
+    .content {
+        flex-grow: 1;
+    }
+
+    .filter-bar {
+        background: #101822;
+        padding: 14px;
+        border-radius: 3px;
+        margin-bottom: 20px;
+        border: 1px solid #2a475e;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .game-card {
+        background: #16202d;
+        border: 1px solid #2a475e;
+        border-radius: 2px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .game-card:hover {
+        transform: translateY(-4px);
+        background: #1f2f42;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        border-color: var(--steam-blue);
+    }
+
+    .game-cover {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        display: block;
+        background: #0e141b;
+    }
+
+    .no-cover {
+        width: 100%;
+        height: 140px;
+        background: linear-gradient(135deg, #1b2838 0%, #2a475e 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--steam-blue);
+        font-weight: bold;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .game-info {
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: space-between;
+    }
+
+    .game-title {
+        font-size: 16px;
+        margin: 0 0 8px;
+    }
+
+    .game-title a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .game-title a:hover {
+        color: var(--steam-blue);
+    }
+
+    .game-cat {
+        font-size: 12px;
+        color: var(--steam-muted);
+        margin-bottom: 12px;
+    }
+
+    .game-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #0e141b;
+        padding: 6px 10px;
+        border-radius: 2px;
+    }
+
+    .steam-price {
+        color: #acdbf5;
+        font-weight: bold;
+        font-size: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:product_list' %}">Усі ігри</a>
+        {% if category %} › <span>{{ category.name }}</span>{% endif %}
+        {% if query %} › <span>Пошук: «{{ query }}»</span>{% endif %}
+    </nav>
+
+    <div class="store-layout">
+        <aside class="sidebar">
+            <h3>Жанри</h3>
+            <ul>
+                <li {% if not category %}class="selected"{% endif %}>
+                    <a href="{% url 'shop:product_list' %}">Усі категорії</a>
+                </li>
+                {% for c in categories %}
+                    <li {% if category.slug == c.slug %}class="selected"{% endif %}>
+                        <a href="{{ c.get_absolute_url }}">{{ c.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <section class="content">
+            <form method="get" class="filter-bar">
+                <input type="text" name="q" value="{{ query }}" placeholder="Пошук у крамниці...">
+                <input type="number" name="min_price" value="{{ min_price }}" placeholder="Від (грн)" style="width: 100px;">
+                <input type="number" name="max_price" value="{{ max_price }}" placeholder="До (грн)" style="width: 100px;">
+
+                <label style="font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" name="in_stock" value="1" {% if in_stock == '1' %}checked{% endif %}> В наявності
+                </label>
+
+                <select name="sort">
+                    <option value="">За релевантністю</option>
+                    <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Ціна: за зростанням</option>
+                    <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Ціна: за спаданням</option>
+                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Новинки</option>
+                </select>
+
+                <button type="submit" class="btn-steam-blue">Пошук</button>
+                <a href="{% if category %}{{ category.get_absolute_url }}{% else %}{% url 'shop:product_list' %}{% endif %}" class="btn-steam-blue" style="opacity: 0.7;">Скинути</a>
+            </form>
+
+            <h2 style="margin-top: 0; font-weight: normal; color: #fff; text-transform: uppercase; letter-spacing: 1px; font-size: 18px;">
+                {% if category %}{{ category.name }}{% else %}Популярні та рекомендовані{% endif %}
+            </h2>
+
+            <div class="products-grid">
+                {% for product in products %}
+                    <article class="game-card">
+                        <a href="{{ product.get_absolute_url }}">
+                            {% with first_image=product.images.first %}
+                                {% if first_image %}
+                                    <img src="{{ first_image.image.url }}" alt="{{ product.title }}" class="game-cover">
+                                {% else %}
+                                    <div class="no-cover">🎮 {{ product.category.name }}</div>
+                                {% endif %}
+                            {% endwith %}
+                        </a>
+                        <div class="game-info">
+                            <div>
+                                <h3 class="game-title"><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+                                <div class="game-cat">{{ product.category.name }} • {% if product.stock > 0 %}В наявності: {{ product.stock }}{% else %}<span style="color: #d9534f;">Немає в наявності</span>{% endif %}</div>
+                            </div>
+                            <div class="game-footer">
+                                <span class="steam-price">{{ product.price }} грн</span>
+                                <a href="{{ product.get_absolute_url }}" class="btn-steam-green" style="padding: 6px 12px; font-size: 13px;">Детальніше</a>
+                            </div>
+                        </div>
+                    </article>
+                {% empty %}
+                    <p>За вашим запитом ігор не знайдено.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Оформлення замовлення — GameSteam{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-grid {
+        display: flex;
+        gap: 25px;
+        align-items: flex-start;
+    }
+
+    .checkout-form {
+        flex: 1;
+    }
+
+    .checkout-summary {
+        width: 340px;
+    }
+
+    .form-group p {
+        margin-bottom: 14px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 13px;
+        color: var(--steam-blue);
+        text-transform: uppercase;
+    }
+
+    .form-group input {
+        width: 100%;
+    }
+
+    .summary-items {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 15px;
+        border-bottom: 1px solid #2a475e;
+    }
+
+    .summary-items li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-top: 1px solid rgba(42, 71, 94, 0.4);
+        font-size: 14px;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:product_list' %}">Крамниця</a> ›
+        <a href="{% url 'cart:cart_detail' %}">Кошик</a> ›
+        <span>Оформлення замовлення</span>
+    </nav>
+
+    <div class="checkout-grid">
+        <div class="steam-panel checkout-form">
+            <h2 style="margin-top: 0; color: #fff; font-weight: normal;">Дані отримувача та доставки</h2>
+            <form method="post" class="form-group">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn-steam-green" style="width: 100%; text-align: center; margin-top: 10px;">
+                    Підтвердити покупку
+                </button>
+            </form>
+        </div>
+
+        <aside class="steam-panel checkout-summary">
+            <h3 style="margin-top: 0; color: var(--steam-blue); text-transform: uppercase; font-size: 14px;">Ваше замовлення</h3>
+            <ul class="summary-items">
+                {% for item in cart %}
+                    <li>
+                        <span>{{ item.quantity }}× {{ item.product.title }}</span>
+                        <span style="color: #acdbf5;">{{ item.total_price }} грн</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="summary-total">
+                <span>До сплати:</span>
+                <span>{{ cart.get_total_price }} грн</span>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

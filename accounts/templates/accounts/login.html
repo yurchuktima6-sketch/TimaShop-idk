@@ -1,0 +1,28 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Вхід — GameSteam{% endblock %}
+
+{% block content %}
+    <div class="steam-panel" style="max-width: 420px; margin: 40px auto;">
+        <h2 style="margin-top: 0; color: #fff; font-weight: normal; text-transform: uppercase; letter-spacing: 1px;">Увійти в акаунт</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Вивід загальних помилок форми -->
+            {% if form.non_field_errors %}
+                <div style="color: #d9534f; margin-bottom: 15px; font-size: 13px;">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {{ form.as_p }}
+            
+            <button type="submit" class="btn-steam-green" style="width: 100%; margin-top: 10px;">Увійти</button>
+        </form>
+        
+        <p style="margin-top: 18px; font-size: 13px; color: var(--steam-muted);">
+            Ще не маєте акаунту? <a href="{% url 'accounts:register' %}" style="color: var(--steam-blue);">Зареєструватися</a>
+        </p>
+    </div>
+{% endblock %}
